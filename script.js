@@ -5,8 +5,7 @@ let drops = [];
 let lastTime = 0;
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const frameInterval = prefersReducedMotion ? 1000 : 160; // gentler matrix animation
-const dropSpeed = prefersReducedMotion ? 0.2 : 0.35;
+const dropSpeed = prefersReducedMotion ? 40 : 120; // pixels per second
 
 const characters = 'AI010101CYBERDATASECUREAUTOMATE';
 
@@ -14,14 +13,12 @@ function resizeCanvas() {
   width = canvas.width = window.innerWidth;
   height = canvas.height = window.innerHeight;
   const columns = Math.floor(width / 20);
-  drops = Array(columns).fill(1);
+  drops = Array.from({ length: columns }, () => Math.random() * -height);
 }
 
 function drawMatrix(timestamp) {
-  if (timestamp - lastTime < frameInterval) {
-    requestAnimationFrame(drawMatrix);
-    return;
-  }
+  if (!lastTime) lastTime = timestamp;
+  const delta = Math.min((timestamp - lastTime) / 1000, 0.05);
   lastTime = timestamp;
 
   ctx.fillStyle = 'rgba(5, 13, 24, 0.1)';
@@ -32,8 +29,10 @@ function drawMatrix(timestamp) {
   drops.forEach((y, i) => {
     const text = characters.charAt(Math.floor(Math.random() * characters.length));
     const x = i * 20;
-    ctx.fillText(text, x, y * 20);
-    drops[i] = y * 20 > height && Math.random() > 0.96 ? 0 : y + dropSpeed;
+    ctx.fillText(text, x, y);
+
+    const nextY = y > height && Math.random() > 0.96 ? Math.random() * -height : y + dropSpeed * delta;
+    drops[i] = nextY;
   });
 
   requestAnimationFrame(drawMatrix);

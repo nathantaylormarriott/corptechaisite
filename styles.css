@@ -29,11 +29,24 @@ canvas#matrix-canvas {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.35;
+  opacity: 0;
+  animation: matrixIntro 1.8s ease forwards;
+}
+
+@keyframes matrixIntro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0.35;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  canvas#matrix-canvas { opacity: 0.2; }
+  canvas#matrix-canvas {
+    opacity: 0.2;
+    animation: none;
+  }
   *, *::before, *::after { transition: none !important; animation-duration: 0.01ms !important; }
 }
 

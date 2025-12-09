@@ -5,33 +5,48 @@ let drops = [];
 let lastTime = 0;
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const dropSpeed = prefersReducedMotion ? 40 : 120; // pixels per second
+const dropSpeed = prefersReducedMotion ? 80 : 240; // pixels per second
+const fontSize = 18;
+const columnWidth = 26;
+const lineHeight = fontSize * 1.35;
 
 const characters = 'AI010101CYBERDATASECUREAUTOMATE';
 
 function resizeCanvas() {
   width = canvas.width = window.innerWidth;
   height = canvas.height = window.innerHeight;
-  const columns = Math.floor(width / 20);
+  const columns = Math.floor(width / columnWidth);
   drops = Array.from({ length: columns }, () => Math.random() * -height);
 }
 
 function drawMatrix(timestamp) {
   if (!lastTime) lastTime = timestamp;
-  const delta = Math.min((timestamp - lastTime) / 1000, 0.05);
+  const delta = Math.min((timestamp - lastTime) / 1000, 0.045);
   lastTime = timestamp;
 
-  ctx.fillStyle = 'rgba(5, 13, 24, 0.1)';
+  ctx.fillStyle = 'rgba(5, 13, 24, 0.16)';
   ctx.fillRect(0, 0, width, height);
   ctx.fillStyle = 'rgba(29, 212, 255, 0.7)';
-  ctx.font = '16px "Space Grotesk"';
+  ctx.font = `${fontSize}px "Space Grotesk"`;
+  ctx.textBaseline = 'top';
 
   drops.forEach((y, i) => {
     const text = characters.charAt(Math.floor(Math.random() * characters.length));
-    const x = i * 20;
-    ctx.fillText(text, x, y);
+    const x = i * columnWidth;
 
-    const nextY = y > height && Math.random() > 0.96 ? Math.random() * -height : y + dropSpeed * delta;
+    const fadeTopFactor = Math.min(1, Math.max(0, (y + lineHeight * 2) / (lineHeight * 3)));
+    ctx.globalAlpha = 0.25 + 0.75 * fadeTopFactor;
+    ctx.fillText(text, x, y);
+    ctx.globalAlpha = 1;
+
+    const reachedBottom = y > height + lineHeight;
+    const needsGap = y < 0 && Math.random() > 0.6;
+    const nextY = reachedBottom
+      ? Math.random() * -height
+      : needsGap
+      ? y + dropSpeed * delta * 0.65
+      : y + dropSpeed * delta;
+
     drops[i] = nextY;
   });
 
